@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     postgres_password: str 
     postgres_db: str 
 
+    # JWT 
+    jwt_secret: str 
+    jwt_algorithm: str 
+
     
     @property 
     def get_db_url(self):

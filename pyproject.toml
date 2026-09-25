@@ -7,5 +7,6 @@ requires-python = ">=3.14"
 dependencies = [
     "bcrypt>=5.0.0",
     "fastapi[standard]>=0.141.1",
+    "pyjwt>=2.15.0",
     "sqlalchemy>=2.0.54",
 ]

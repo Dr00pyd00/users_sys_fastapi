@@ -53,6 +53,7 @@ class User(Base):
     username: Mapped[str | None] = mapped_column(
             String,
             nullable=True,
+            unique=True
             )
 
     first_name: Mapped[str | None] = mapped_column(

@@ -98,3 +98,22 @@ class UserCreationFormSchema(BaseModel):
         return input    
 
 
+class UserClientDisplaySchema(BaseModel):
+    """
+    Pydantic schema for displays User data to a client
+    """
+
+    model_config = {'from_attributes':True}
+    
+    id: int  
+    email: EmailStr 
+    username: str | None = None 
+    first_name: str | None = None 
+    last_name: str | None = None 
+    birth: date | None = None 
+    phone_number: str | None = None 
+
+
+
+
+

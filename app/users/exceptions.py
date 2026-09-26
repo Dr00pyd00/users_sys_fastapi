@@ -1,10 +1,17 @@
 
+class UserServiceError(Exception):
+    """Base exception for all user-related service errors."""
+    pass
 
-
-class UsernameAlreadyTakenError(Exception):
+class UsernameAlreadyTakenError(UserServiceError):
     pass 
 
-class EmailAlreadyTakenError(Exception):
+class EmailAlreadyTakenError(UserServiceError):
     pass 
 
+class InvalidCredentialsError(UserServiceError):
+    pass 
+
+class UserDoesNotExist(UserServiceError):
+    pass
 

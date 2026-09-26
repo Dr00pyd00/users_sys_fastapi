@@ -1,22 +1,22 @@
 
 # TODO 
 
-- [] timestamp mixin 
+- [ ] timestamp mixin 
 
-- [] status mixin 
+- [ ] status mixin 
 
-- [] soft delete mixin 
+- [ ] soft delete mixin 
 
-- [] roles pour users 
+- [ ] roles pour users 
 
-- [] filtres pour users 
+- [ ] filtres pour users 
 
-- [] routes :
-        - [] login 
-        - [] create 
-        - [] delete 
-        - [] update 
+- [ ] routes :
+        - [ ] login 
+        - [ ] create 
+        - [ ] delete 
+        - [ ] update 
  
-- [] system possible de choisir entre normal et softdelete 
+- [ ] system possible de choisir entre normal et softdelete 
 
 

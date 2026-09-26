@@ -1,0 +1,18 @@
+
+services:
+
+  my_pg:
+    image: postgres:16.4 
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - 5430:5432
+
+    volumes:
+      - users_project_volume:/var/lib/postgresql/data
+
+volumes:
+  users_project_volume:
+

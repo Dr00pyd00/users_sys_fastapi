@@ -11,12 +11,13 @@
 
 - [ ] filtres pour users 
 
-- [ ] routes :
-        - [ ] login 
-        - [ ] create 
-        - [ ] delete 
-        - [ ] update 
- 
+### Routes :
+- [ ] login 
+- [ ] create 
+- [ ] delete 
+- [ ] update 
+
+
 - [ ] system possible de choisir entre normal et softdelete 
 
 

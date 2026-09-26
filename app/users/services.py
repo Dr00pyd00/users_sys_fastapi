@@ -41,6 +41,8 @@ async def create_user_service(form_data: UserCreationFormSchema, db: AsyncSessio
             raise UsernameAlreadyTakenError
 
     data_dict = form_data.model_dump() 
+    # delete password_confirmation
+    data_dict.pop('password_confirmation')
     # pw hashing 
     pw = data_dict.pop('password') 
     data_dict['hashed_password'] = hash_pw(pw)

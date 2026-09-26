@@ -35,6 +35,13 @@ class UserCreationFormSchema(BaseModel):
             description='User password: 10 to 72 chars.',
             )
 
+    password_confirmation: str = Field(
+            ...,
+            min_length=10,
+            max_length=72,
+            description='user password2, the confirmation one: 10 to 72 chars.',
+            )
+
     # optional -----------------
     username: Optional[str] = Field(
             min_length=2,
@@ -66,6 +73,13 @@ class UserCreationFormSchema(BaseModel):
             )
 
     # validators ----------------
+    """
+        field_validator: verifie avant de creer l'objet. 
+        Donc il existe `ValidationInfo` qui sert a regarder les data saisis avant.
+
+        - ValidationInfo.data -> dict qui contient les data saisis 
+        - ValidationInfo.filed_name -> str du champ tester
+    """
     @field_validator('username')
     @classmethod
     def verify_username_format(cls, input: str | None) -> str | None:
@@ -91,6 +105,13 @@ class UserCreationFormSchema(BaseModel):
             raise ValueError('<password> must contain at least ONE digit')
         if not any(char.isalpha() for char in input):
             raise ValueError('<password> must contain at least ONE alphabetic char')
+        return input
+    
+    @field_validator('password_confirmation')
+    @classmethod
+    def verify_confirmation_password(cls, input: str, info: ValidationInfo) -> str:
+        if input != info.data.get('password'):
+            raise ValueError('<password_confirmation> does not match <password?>')
         return input
     
     @field_validator('birth')

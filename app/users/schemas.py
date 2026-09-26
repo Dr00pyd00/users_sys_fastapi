@@ -20,6 +20,17 @@ NAMES_REGEX = r"^[a-zA-ZÀ-ÖØ-öø-ÿ' -]+$"
 class UserCreationFormSchema(BaseModel):
     """ 
     Pydantic schema for create a new User 
+    Contains:
+        - id: int
+        - email: EmailStr
+        - password: str 
+        - password_confirmation: str 
+        - username: str 
+        - first_name: str 
+        - last_name: str 
+        - birth: date 
+        - phone_number: str 
+
     """
 
     # required ----------------
@@ -127,6 +138,14 @@ class UserCreationFormSchema(BaseModel):
 class UserClientDisplaySchema(BaseModel):
     """
     Pydantic schema for displays User data to a client
+    Contains:
+        - id: int  
+        - email: EmailStr 
+        - username: str | None = None 
+        - first_name: str | None = None 
+        - last_name: str | None = None 
+        - birth: date | None = None 
+        - phone_number: str | None = None 
     """
 
     model_config = {'from_attributes':True}
@@ -141,5 +160,29 @@ class UserClientDisplaySchema(BaseModel):
 
 
 
+class UserLoginSchema(BaseModel):
+    """
+    Pydantic schema for forms login.
+    Contains:
+        - email: str 
+        - password: str
+    """
+    email: EmailStr 
+    password: str 
+
+
+class UserSuccessLoginTokensSchema(BaseModel):
+    """
+    Pydantic schema for displays tokens ( access + refresh ) to client.
+    Contains:
+        - access_token: str 
+        - refresh_token: str 
+        - expires_in: int -> expiration time 
+        - token_type: str 
+    """
+    access_token: str 
+    refresh_token: str 
+    expires_in: int 
+    token_type: str = 'Bearer'
 
 

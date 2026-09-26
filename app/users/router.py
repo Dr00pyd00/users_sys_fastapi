@@ -6,9 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status 
 
 from app.dependencies.database import get_db
-from app.users.exceptions import EmailAlreadyTakenError, UsernameAlreadyTakenError 
-from app.users.schemas import UserCreationFormSchema, UserClientDisplaySchema
-from app.users.services import create_user_service 
+from app.users.exceptions import EmailAlreadyTakenError, InvalidCredentialsError, UsernameAlreadyTakenError 
+from app.users.schemas import UserCreationFormSchema, UserClientDisplaySchema, UserLoginSchema, UserSuccessLoginTokensSchema
+from app.users.services import create_user_service, login_service 
 
 router = APIRouter(
         prefix='/users',
@@ -39,4 +39,31 @@ async def create_user(
                 detail='Email already taken',
                 )
     return user
+
+
+
+@router.post(
+        '/login',
+        response_model=UserSuccessLoginTokensSchema,
+        status_code=status.HTTP_200_OK,
+        )
+async def login_user(
+        form_data: UserLoginSchema,
+        db: Annotated[AsyncSession, Depends(get_db)],
+        ):
+    try:
+        tokens = await login_service(
+                form_data=form_data,
+                db=db,
+                )
+    except InvalidCredentialsError as e:
+        raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail='Invalid Credentials',
+                )
+
+    return tokens
+
+
+
 

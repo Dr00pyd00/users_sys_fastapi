@@ -31,6 +31,7 @@ class User(Base):
         - `phone_number`: str 
 
     """
+    __tablename__ = 'users'
     
     # Required ---------------------------------------
     id: Mapped[int] = mapped_column(

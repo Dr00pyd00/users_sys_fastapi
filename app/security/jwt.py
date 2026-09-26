@@ -8,7 +8,10 @@ import jwt
 from app.core.settings import settings
 from app.users.models import User
 
-def create_access_jwt(user: User, duration: int = 15):
+
+
+
+def create_access_jwt(user: User, duration: int = settings.jwt_access_token_expire_minutes):
     """
     Create a new jwt ACCESS token with:
         - `expiration`: 15 min
@@ -42,7 +45,7 @@ def create_access_jwt(user: User, duration: int = 15):
     return encoded_token 
 
 
-def create_refresh_jwt(user: User, duration: int = 7):
+def create_refresh_jwt(user: User, duration: int = settings.jwt_refresh_token_expire_days):
     """
     Create a new jwt REFRESH token with:
         - `expiration`: 7 days

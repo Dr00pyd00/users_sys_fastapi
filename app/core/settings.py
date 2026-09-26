@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     # JWT 
     jwt_secret: str 
     jwt_algorithm: str 
+    jwt_access_token_expire_minutes: int 
+    jwt_refresh_token_expire_days: int
 
     
     @property 

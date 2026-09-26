@@ -18,7 +18,7 @@ router = APIRouter(
 
 
 @router.post(
-        '/', 
+        '/register', 
         response_model=UserClientDisplaySchema, # type:ignore
         status_code=status.HTTP_201_CREATED,
         )

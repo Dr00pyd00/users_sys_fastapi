@@ -1,6 +1,11 @@
 
+"""
+    Installer : uv add python-dateutil
+"""
+
 from datetime import date 
 from dateutil.relativedelta import relativedelta # prend en compte annees bisectiles
+
 from typing import Optional
 import re
 

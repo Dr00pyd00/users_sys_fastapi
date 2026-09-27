@@ -1,14 +1,15 @@
 
+import jwt
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_ 
 
 from app.core.settings import settings
-from app.security.jwt import create_access_jwt, create_refresh_jwt
+from app.security.jwt import create_access_jwt, create_refresh_jwt, verify_jwt_token
 from app.security.pw_hashing import hash_pw, verify_pw
-from app.users.exceptions import EmailAlreadyTakenError, UserDoesNotExist, UsernameAlreadyTakenError, InvalidCredentialsError
+from app.users.exceptions import EmailAlreadyTakenError, InvalidRefreshToken, UserDoesNotExist, UsernameAlreadyTakenError, InvalidCredentialsError
 from app.users.models import User
-from app.users.schemas import UserCreationFormSchema, UserLoginSchema, UserSuccessLoginTokensSchema 
+from app.users.schemas import RefreshTokenRequestSchema, RefreshedAccessTokenSchema, UserCreationFormSchema, UserLoginSchema, UserSuccessLoginTokensSchema 
 
 
 async def create_user_service(form_data: UserCreationFormSchema, db: AsyncSession):
@@ -103,6 +104,44 @@ async def login_service(form_data: UserLoginSchema, db: AsyncSession) -> UserSuc
                 )
 
 
+async def refresh_simple_service(refresh_token: RefreshTokenRequestSchema, db: AsyncSession) -> RefreshedAccessTokenSchema:
+    """
+        Take a refresh_token, check if all is valid them return a RefreshedAccessTokenSchema: a new_access_token.
+
+        Args:
+            - refresh_token: `RefreshTokenRequestSchema` -> from frontend 
+            - db: asyncsession 
+        Returns:
+            - RefreshedAccessTokenSchema: access_token, expires_in, token_type.
+        Errors:
+            - InvalidRefreshToken 
+    """
+    try:
+        payload = verify_jwt_token(token=refresh_token.refresh_token)
+    except (jwt.InvalidTokenError, jwt.ExpiredSignatureError): 
+        raise InvalidRefreshToken
+
+    if payload.get('token_type') != 'refresh_token':
+        raise InvalidRefreshToken 
+
+    user_id = payload.get('sub')
+    if user_id is None:
+        raise InvalidRefreshToken
+    
+    res = await db.execute(select(User).where(User.id == int(user_id)))
+    user = res.scalar_one_or_none()
+    if user is None:
+        raise InvalidRefreshToken 
+
+    new_access_token = create_access_jwt(user) 
+    expires_in = settings.jwt_access_token_expire_minutes * 60 # in SECONDS 
+
+    return RefreshedAccessTokenSchema(
+                access_token=new_access_token,
+                expires_in=expires_in,
+                token_type='Bearer',
+                )
+    
 
 
 

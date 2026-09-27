@@ -9,16 +9,31 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status 
 
+from app.users.models import User
 from app.dependencies.database import get_db
-from app.users.exceptions import EmailAlreadyTakenError, InvalidCredentialsError, UsernameAlreadyTakenError 
-from app.users.schemas import UserCreationFormSchema, UserClientDisplaySchema, UserLoginSchema, UserSuccessLoginTokensSchema
-from app.users.services import create_user_service, login_service 
+from app.dependencies.users import get_current_user
+from app.users.exceptions import EmailAlreadyTakenError, InvalidCredentialsError, InvalidRefreshToken, UsernameAlreadyTakenError 
+from app.users.schemas import RefreshTokenRequestSchema, RefreshedAccessTokenSchema, UserCreationFormSchema, UserClientDisplaySchema, UserLoginSchema, UserSuccessLoginTokensSchema
+from app.users.services import create_user_service, login_service, refresh_simple_service 
 
 router = APIRouter(
         prefix='/users',
         tags=['Users'],
         # TODO dependencies et responses ici en args ? 
         )
+
+
+@router.get(
+        '/me',
+        response_model=UserClientDisplaySchema,
+        status_code=status.HTTP_200_OK,
+        )
+async def get_me(
+        current_user: Annotated[User, Depends(get_current_user)],
+        ):
+    return current_user 
+
+
 
 
 @router.post(
@@ -70,4 +85,24 @@ async def login_user(
 
 
 
+@router.post(
+        '/refresh_simple',
+        response_model= RefreshedAccessTokenSchema,
+        status_code=status.HTTP_200_OK,
+        )
+async def refresh_simple(
+        refresh_token: RefreshTokenRequestSchema,
+        db: Annotated[AsyncSession, Depends(get_db)],
+        ):
+    try:
+        tokens = await refresh_simple_service(refresh_token=refresh_token, db=db)
+    except InvalidRefreshToken:
+        raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail='Invalid refresh token',
+                )
+    return tokens 
+
+
+        
 

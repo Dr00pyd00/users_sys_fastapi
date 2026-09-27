@@ -1,3 +1,7 @@
+"""
+    - 401_Unauthorized = je ne sais pas qui c'est / identifiants Invalids 
+    - 403_Forbidden = je sais qui tu es mais tu n'as pas le droit
+""" 
 
 from typing import Annotated
 

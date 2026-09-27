@@ -135,6 +135,8 @@ class UserCreationFormSchema(BaseModel):
         return input    
 
 
+# Users ----------------------------------------------------------------
+
 class UserClientDisplaySchema(BaseModel):
     """
     Pydantic schema for displays User data to a client
@@ -184,5 +186,29 @@ class UserSuccessLoginTokensSchema(BaseModel):
     refresh_token: str 
     expires_in: int 
     token_type: str = 'Bearer'
+
+
+# Tokens  ----------------------------------------------------------------
+class RefreshTokenRequestSchema(BaseModel):
+    """
+    Pydantic schema for ask a new access_token.
+    Contains:
+        - refresh_token: str 
+    """
+    refresh_token: str
+
+
+class RefreshedAccessTokenSchema(BaseModel):
+    """
+        Pydantic schema for displays access_token AFTER a refresh to client.
+        Contains:
+            - access_token: str 
+            - expires_in: int -> expiration time 
+            - token_type: str 
+    """
+    access_token: str 
+    expires_in: int 
+    token_type: str = 'Bearer'
+
 
 

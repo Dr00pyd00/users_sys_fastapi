@@ -2,16 +2,14 @@
 
 from datetime import datetime, timedelta, timezone 
 import uuid
-
 import jwt
 
 from app.core.settings import settings
-from app.users.models import User
 
 
 
 
-def create_access_jwt(user: User, duration: int = settings.jwt_access_token_expire_minutes):
+def create_access_jwt(user_id: int, duration: int = settings.jwt_access_token_expire_minutes):
     """
     Create a new jwt ACCESS token with:
         - `expiration`: 15 min
@@ -23,7 +21,7 @@ def create_access_jwt(user: User, duration: int = settings.jwt_access_token_expi
             - token_type ('access_token' i-e) 
 
     Args:
-        - user : User object
+        - user_id : int
         - duration: int -> live token duration in MINUTES. Default=15 
     Return:
         - Access Token (str)
@@ -31,7 +29,7 @@ def create_access_jwt(user: User, duration: int = settings.jwt_access_token_expi
     now = datetime.now(timezone.utc)
     token_duration = timedelta(minutes=duration) 
     payload = {
-            'sub': str(user.id),
+            'sub': user_id,
             'exp': now + token_duration,
             'iat': now,
             'jti': str(uuid.uuid4()),
@@ -45,19 +43,19 @@ def create_access_jwt(user: User, duration: int = settings.jwt_access_token_expi
     return encoded_token 
 
 
-def create_refresh_jwt(user: User, duration: int = settings.jwt_refresh_token_expire_days):
+def create_refresh_jwt(user_id: int, duration: int = settings.jwt_refresh_token_expire_days):
     """
     Create a new jwt REFRESH token with:
         - `expiration`: 7 days
         - `payload` contain:
-            - sud (user_id i-e)
+            - sub (user_id i-e)
             - exp (total life time of token)
             - iat (timestamp creation of token)
             - jti (id of the token) 
             - token_type ('refresh_token' i-e) 
 
     Args:
-        - user : User object
+        - user_id : int
         - duration: int -> live token duration in DAYS. Default=7 
     Return:
         - Refresh Token (str)
@@ -65,7 +63,7 @@ def create_refresh_jwt(user: User, duration: int = settings.jwt_refresh_token_ex
     now = datetime.now(timezone.utc)
     token_duration = timedelta(days=duration) 
     payload = {
-            'sub': str(user.id),
+            'sub': user_id,
             'exp': now + token_duration,
             'iat': now,
             'jti': str(uuid.uuid4()),

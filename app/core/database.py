@@ -21,3 +21,8 @@ LocalSession = async_sessionmaker(
 class Base(DeclarativeBase):
     pass 
 
+# Dependencies -----------------------------------------
+async def get_db():
+    async with LocalSession() as db:
+        yield db
+

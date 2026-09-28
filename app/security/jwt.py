@@ -14,7 +14,7 @@ def create_access_jwt(user_id: int, duration: int = settings.jwt_access_token_ex
     Create a new jwt ACCESS token with:
         - `expiration`: 15 min
         - `payload` contain:
-            - sud (user_id i-e)
+            - sub (user_id i-e): str
             - exp (total life time of token)
             - iat (timestamp creation of token)
             - jti (id of the token) 
@@ -29,7 +29,7 @@ def create_access_jwt(user_id: int, duration: int = settings.jwt_access_token_ex
     now = datetime.now(timezone.utc)
     token_duration = timedelta(minutes=duration) 
     payload = {
-            'sub': user_id,
+            'sub': str(user_id),
             'exp': now + token_duration,
             'iat': now,
             'jti': str(uuid.uuid4()),
@@ -63,7 +63,7 @@ def create_refresh_jwt(user_id: int, duration: int = settings.jwt_refresh_token_
     now = datetime.now(timezone.utc)
     token_duration = timedelta(days=duration) 
     payload = {
-            'sub': user_id,
+            'sub': str(user_id),
             'exp': now + token_duration,
             'iat': now,
             'jti': str(uuid.uuid4()),
@@ -93,6 +93,7 @@ def verify_jwt_token(token: str):
                 jwt=token,
                 key=settings.jwt_secret,
                 algorithms=[settings.jwt_algorithm],
+                options={'require':['exp','iat','sub','jti']}
                 )
     return payload 
 

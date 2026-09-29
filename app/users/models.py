@@ -3,7 +3,7 @@
 Ici on met juste les type pour postgres, on s'en fiche du 'mail type' par exemple
 """
 
-from datetime import date as datetime_date
+from datetime import date as datetime_date # jours sans heures.
 
 from sqlalchemy import Date, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship 

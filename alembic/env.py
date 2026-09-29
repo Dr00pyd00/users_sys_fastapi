@@ -33,6 +33,7 @@ from app.core.settings import settings
 from app.core.database import Base 
 # all models 
 from app.users.models import User 
+from app.auth.models import RefreshToken 
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

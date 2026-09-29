@@ -4,7 +4,7 @@ import jwt
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from app.auth.models import RefreshToken
 from app.core.settings import settings
@@ -117,6 +117,59 @@ async def refresh_simple_service(refresh_token: RefreshTokenRequestSchema, db: A
                 token_type='Bearer',
                 )
     
+
+
+
+async def refresh_service(refresh_token: RefreshTokenRequestSchema, db: AsyncSession) -> RefreshedAccessTokenSchema:
+
+    # 1
+    hashed_refresh_token: str = hash_refresh_token(refresh_token.refresh_token)
+
+    # je regarde si le refresh_token exist en DB:
+    res = await db.execute(select(RefreshToken).where(RefreshToken.refresh_token_hash == hashed_refresh_token))
+    existing_refresh_token = res.scalar_one_or_none()
+    if not existing_refresh_token:
+        raise InvalidRefreshToken
+
+    # Si le token est no_active: on met TOUTE la family en inactive 
+    if existing_refresh_token.is_active == False:
+        await db.execute(
+                update(RefreshToken)
+                .where(RefreshToken.family_id == existing_refresh_token.family_id)
+                .values(is_active=False)
+                )
+        await db.commit()
+        raise InvalidRefreshToken 
+
+    # Verifie si les expirations sont passees ou non:
+    now = datetime.now(timezone.utc) 
+    if existing_refresh_token.expires_at < now or existing_refresh_token.family_expires_at < now: 
+        raise InvalidRefreshToken
+
+    # On va mettre le refresh token en DB sur inactive car on le consomme
+    # on check l'id en meme temps le status active pour eviter une double requete 
+    consumed = await db.execute(
+            update(RefreshToken)
+            .where(
+                RefreshToken.id == existing_refresh_token.id,
+                RefreshToken.is_active.is_(True),
+                )
+            .values(is_active=False)
+            .returning(RefreshToken.id)
+            )
+    if consumed.scalar_one_or_none() is None:
+        # si jamais consumed a pas marcher ca veut dire que c'etait DEJA sur inactive. donc on desactive a nouveau la famille entiere
+        await db.execute(
+                update(RefreshToken)
+                .where(RefreshToken.family_id == existing_refresh_token.family_id)
+                .values(is_active=False)
+                )
+        await db.commit()
+        raise InvalidRefreshToken
+
+
+
+
 
 
 

@@ -7,7 +7,7 @@ from starlette import status
 
 from app.core.database import get_db
 from app.auth.schemas import UserLoginSchema, UserSuccessLoginTokensSchema, RefreshedAccessTokenSchema, RefreshTokenRequestSchema
-from app.auth.services import login_service, refresh_simple_service 
+from app.auth.services import login_service, refresh_simple_service, refresh_service
 
 from app.users.services import create_user_service 
 from app.users.schemas import   UserCreationFormSchema, UserClientDisplaySchema
@@ -68,23 +68,29 @@ async def login_user(
     return tokens
 
 
+
 @router.post(
-        '/refresh_simple',
-        response_model= RefreshedAccessTokenSchema,
+        '/refresh',
+        response_model=UserSuccessLoginTokensSchema,
         status_code=status.HTTP_200_OK,
         )
-async def refresh_simple(
+async def refresh(
         refresh_token: RefreshTokenRequestSchema,
         db: Annotated[AsyncSession, Depends(get_db)],
         ):
     try:
-        tokens = await refresh_simple_service(refresh_token=refresh_token, db=db)
+        tokens = await refresh_service(
+                refresh_token=refresh_token,
+                db=db,
+                )
     except InvalidRefreshToken:
         raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail='Invalid refresh token',
                 )
-    return tokens 
+    return tokens
+
+
 
 
         

@@ -79,48 +79,24 @@ async def login_service(form_data: UserLoginSchema, db: AsyncSession) -> UserSuc
                 )
 
 
-async def refresh_simple_service(refresh_token: RefreshTokenRequestSchema, db: AsyncSession) -> RefreshedAccessTokenSchema:
+
+async def refresh_service(refresh_token: RefreshTokenRequestSchema, db: AsyncSession) -> UserSuccessLoginTokensSchema:
     """
-        Take a refresh_token, check if all is valid them return a RefreshedAccessTokenSchema: a new_access_token.
+    Take a refresh_token from client, check all and give new tokens (access+refresh) for next time.
 
-        Args:
-            - refresh_token: `RefreshTokenRequestSchema` -> from frontend 
-            - db: asyncsession 
-        Returns:
-            - RefreshedAccessTokenSchema: access_token, expires_in, token_type.
-        Errors:
-            - InvalidRefreshToken 
+    Args:
+        - refresh_token: RefreshTokenRequestSchema -> uuid str represent the token 
+        - db: AsyncSession
+    Returns:
+        - UserSuccessLoginTokensSchema: new_refresh_token + new_access_token 
+    Errors:
+        - InvalidRefreshToken
+    
+    Checks:
+        - if refresh_token exist in DB 
+        - if refresh_token is inactive 
+        - if refresh_token expirations are ok 
     """
-    try:
-        payload = verify_jwt_token(token=refresh_token.refresh_token)
-    except (jwt.InvalidTokenError, jwt.ExpiredSignatureError): 
-        raise InvalidRefreshToken
-
-    if payload.get('token_type') != 'refresh_token':
-        raise InvalidRefreshToken 
-
-    user_id = payload.get('sub')
-    if user_id is None:
-        raise InvalidRefreshToken
-    
-    res = await db.execute(select(User).where(User.id == int(user_id)))
-    user = res.scalar_one_or_none()
-    if user is None:
-        raise InvalidRefreshToken 
-
-    new_access_token = create_access_jwt(user.id) 
-    expires_in = settings.jwt_access_token_expire_minutes * 60 # in SECONDS 
-
-    return RefreshedAccessTokenSchema(
-                access_token=new_access_token,
-                expires_in=expires_in,
-                token_type='Bearer',
-                )
-    
-
-
-
-async def refresh_service(refresh_token: RefreshTokenRequestSchema, db: AsyncSession) -> RefreshedAccessTokenSchema:
 
     # 1
     hashed_refresh_token: str = hash_refresh_token(refresh_token.refresh_token)
@@ -167,6 +143,28 @@ async def refresh_service(refresh_token: RefreshTokenRequestSchema, db: AsyncSes
         await db.commit()
         raise InvalidRefreshToken
 
+    # creer access token 
+    new_access_token = create_access_jwt(user_id=existing_refresh_token.user_id) 
+
+    # creer refresh token 
+    new_refresh_token = generate_refresh_token() 
+    new_entry_refresh_token = RefreshToken(
+            refresh_token_hash=hash_refresh_token(new_refresh_token),
+            is_active=True,
+            expires_at=now + timedelta(days=settings.jwt_refresh_token_expire_days),
+            family_id=existing_refresh_token.family_id,
+            family_expires_at=existing_refresh_token.family_expires_at,
+            user_id=existing_refresh_token.user_id,
+            )
+    db.add(new_entry_refresh_token)
+    await db.commit()
+    
+    return UserSuccessLoginTokensSchema(
+            access_token=new_access_token,
+            refresh_token=new_refresh_token,
+            expires_in=settings.jwt_access_token_expire_minutes * 60,
+            token_type='Bearer',
+            )
 
 
 

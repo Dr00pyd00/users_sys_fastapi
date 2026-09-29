@@ -13,6 +13,7 @@ from app.security.pw_hashing import  verify_pw
 from app.auth.schemas import UserLoginSchema, UserSuccessLoginTokensSchema, RefreshTokenRequestSchema, RefreshedAccessTokenSchema
 from app.auth.exceptions import InvalidCredentialsError, InvalidRefreshToken 
 
+from app.security.refresh_token import generate_refresh_token, hash_refresh_token
 from app.users.models import User
 
 
@@ -21,6 +22,8 @@ async def login_service(form_data: UserLoginSchema, db: AsyncSession) -> UserSuc
     Take pydantic form.  
     Check the password with DB password.  
     Generate `access token` and `refresh token`. 
+
+    The refresh_token is a UUID, we hash it for DB.
 
     Args: 
         - `UserLoginSchema`: email + password 
@@ -41,22 +44,32 @@ async def login_service(form_data: UserLoginSchema, db: AsyncSession) -> UserSuc
     if not good_pw:
         raise InvalidCredentialsError
 
-    # create the tokens: 
-
-    new_jti_refresh = str(uuid.uuid4())
-    access_token = create_access_jwt(user_id=existing_user.id)
-    refresh_token = create_refresh_jwt(user_id=existing_user.id, jti=new_jti_refresh)
-    expires_in = settings.jwt_access_token_expire_minutes * 60 # in SECONDS 
+    # create the access token: 
+    access_token: str = create_access_jwt(user_id=existing_user.id)
 
     # create refresh_token in tables for future checks 
-    expire_at = datetime.now(timezone.utc) + timedelta(days=settings.jwt_refresh_token_expire_days)
+    refresh_token: str = generate_refresh_token()
+
+    hashed_refresh_token: str = hash_refresh_token(refresh_token=refresh_token)
+    family_id: uuid.UUID = uuid.uuid4()
+    now = datetime.now(timezone.utc)
+    expires_at = now + timedelta(days=settings.jwt_refresh_token_expire_days)
+    family_expires_at = now + timedelta(days=settings.refresh_token_absolute_days)
+
+
     new_entry_refresh_token = RefreshToken(
-            jti=new_jti_refresh,
+            refresh_token_hash = hashed_refresh_token,
+            is_active=True,
+            expires_at=expires_at,
+            family_id=family_id,
+            family_expires_at=family_expires_at,
             user_id=existing_user.id,
-            expire_at=expire_at,
             )
     db.add(new_entry_refresh_token)
     await db.commit()
+
+    # for UserSuccessLoginTokensSchema:
+    expires_in = settings.jwt_access_token_expire_minutes * 60 # in SECONDS 
 
     return UserSuccessLoginTokensSchema(
                 access_token=access_token,

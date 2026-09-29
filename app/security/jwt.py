@@ -1,7 +1,7 @@
 
+import uuid
 
 from datetime import datetime, timedelta, timezone 
-import uuid
 import jwt
 
 from app.core.settings import settings
@@ -22,6 +22,7 @@ def create_access_jwt(user_id: int, duration: int = settings.jwt_access_token_ex
 
     Args:
         - user_id : int
+        - jti: str 
         - duration: int -> live token duration in MINUTES. Default=15 
     Return:
         - Access Token (str)
@@ -43,7 +44,7 @@ def create_access_jwt(user_id: int, duration: int = settings.jwt_access_token_ex
     return encoded_token 
 
 
-def create_refresh_jwt(user_id: int, duration: int = settings.jwt_refresh_token_expire_days):
+def create_refresh_jwt(user_id: int, jti: str, duration: int = settings.jwt_refresh_token_expire_days):
     """
     Create a new jwt REFRESH token with:
         - `expiration`: 7 days
@@ -56,6 +57,7 @@ def create_refresh_jwt(user_id: int, duration: int = settings.jwt_refresh_token_
 
     Args:
         - user_id : int
+        - jti: str  ( uuid4 ) 
         - duration: int -> live token duration in DAYS. Default=7 
     Return:
         - Refresh Token (str)
@@ -66,7 +68,7 @@ def create_refresh_jwt(user_id: int, duration: int = settings.jwt_refresh_token_
             'sub': str(user_id),
             'exp': now + token_duration,
             'iat': now,
-            'jti': str(uuid.uuid4()),
+            'jti': jti,
             'token_type':'refresh_token',
             }
     encoded_token = jwt.encode(

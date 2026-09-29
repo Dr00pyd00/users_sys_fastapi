@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     jwt_access_token_expire_minutes: int 
     jwt_refresh_token_expire_days: int
 
+    # Refresh token 
+    refresh_token_absolute_days: int
+
     
     @property 
     def get_db_url(self):

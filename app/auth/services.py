@@ -1,7 +1,12 @@
+
+import uuid
 import jwt
+from datetime import datetime, timedelta, timezone
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
+from app.auth.models import RefreshToken
 from app.core.settings import settings
 from app.security.jwt import create_access_jwt, create_refresh_jwt, verify_jwt_token
 from app.security.pw_hashing import  verify_pw
@@ -37,9 +42,21 @@ async def login_service(form_data: UserLoginSchema, db: AsyncSession) -> UserSuc
         raise InvalidCredentialsError
 
     # create the tokens: 
-    access_token = create_access_jwt(existing_user.id)
-    refresh_token = create_refresh_jwt(existing_user.id)
+
+    new_jti_refresh = str(uuid.uuid4())
+    access_token = create_access_jwt(user_id=existing_user.id)
+    refresh_token = create_refresh_jwt(user_id=existing_user.id, jti=new_jti_refresh)
     expires_in = settings.jwt_access_token_expire_minutes * 60 # in SECONDS 
+
+    # create refresh_token in tables for future checks 
+    expire_at = datetime.now(timezone.utc) + timedelta(days=settings.jwt_refresh_token_expire_days)
+    new_entry_refresh_token = RefreshToken(
+            jti=new_jti_refresh,
+            user_id=existing_user.id,
+            expire_at=expire_at,
+            )
+    db.add(new_entry_refresh_token)
+    await db.commit()
 
     return UserSuccessLoginTokensSchema(
                 access_token=access_token,

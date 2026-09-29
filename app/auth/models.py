@@ -1,7 +1,8 @@
 
 from datetime import datetime
+import uuid
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import Boolean, String, ForeignKey, DateTime
+from sqlalchemy import Boolean, String, ForeignKey, DateTime, Uuid
 
 from app.core.database import Base
 
@@ -13,10 +14,12 @@ class RefreshToken(Base):
 
     Attributs:
         - `id`: int autogenerate 
-        - `jti`: str -> uuid4 ( the refreshtoken name ) 
+        - `refresh_token_hash`: str 
         - `is_active`: bool
-        - `expire_at`: datetime 
+        - `expires_at`: datetime 
         - `user_id`: int ( ForeignKey ) 
+        - `family_id`: UUID   -> represente a session 
+        - `family_expires_at`: datetime 
 
     """
 
@@ -26,8 +29,8 @@ class RefreshToken(Base):
             primary_key=True,
             )
 
-    jti: Mapped[str] = mapped_column(
-            String,
+    refresh_token_hash : Mapped[str] = mapped_column(
+            String(64),  # because .hexadigest() of SHA256 is exactly 64 bytes 
             nullable=False,
             unique=True,
             index=True,          
@@ -39,7 +42,18 @@ class RefreshToken(Base):
             default=True,
             )
 
-    expire_at: Mapped[datetime] = mapped_column(
+    expires_at: Mapped[datetime] = mapped_column(
+            DateTime(timezone=True),
+            nullable=False,
+            )
+
+    family_id: Mapped[uuid.UUID] = mapped_column(
+            Uuid,
+            nullable=False,
+            index=True,
+            )
+
+    family_expires_at: Mapped[datetime] = mapped_column(
             DateTime(timezone=True),
             nullable=False,
             )

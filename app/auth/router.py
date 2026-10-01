@@ -7,7 +7,7 @@ from starlette import status
 
 from app.core.database import get_db
 from app.auth.schemas import UserLoginSchema, UserSuccessLoginTokensSchema, RefreshTokenRequestSchema
-from app.auth.services import login_service, refresh_service
+from app.auth.services import login_service, logout_service, refresh_service
 
 from app.users.services import create_user_service 
 from app.users.schemas import   UserCreationFormSchema, UserClientDisplaySchema
@@ -89,6 +89,18 @@ async def refresh(
                 detail='Invalid refresh token',
                 )
     return tokens
+
+
+@router.post(
+        '/logout',
+        status_code=status.HTTP_204_NO_CONTENT,
+        )
+async def logout(
+        refresh_token: RefreshTokenRequestSchema,
+        db: Annotated[AsyncSession, Depends(get_db)],
+        ):
+    return await logout_service(refresh_token=refresh_token, db=db)
+
 
 
 

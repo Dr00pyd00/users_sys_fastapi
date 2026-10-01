@@ -167,11 +167,33 @@ async def refresh_service(refresh_token: RefreshTokenRequestSchema, db: AsyncSes
 
 
 
+async def logout_service(refresh_token: RefreshTokenRequestSchema, db: AsyncSession) -> None:
+    """
+    Logout: logout for a specific family_id -> machine by machine 
+    Modify the refresh_token DB and deactivate the same family_id tokens.
 
+    Args:
+        - refresh_token: RefreshTokenRequestSchema 
+        - db: AsyncSession
+    Returns:
+        - None
+    """
 
+    refresh_token_hash = hash_refresh_token(refresh_token.refresh_token)
+    # check if existing in DB 
+    res = await db.execute(select(RefreshToken).where(RefreshToken.refresh_token_hash == refresh_token_hash)) 
+    existing_refresh_token = res.scalar_one_or_none()
+    if not existing_refresh_token:
+        return 
 
-
-
+    # si exist descactiver toute la famille 
+    await db.execute(
+            update(RefreshToken)
+            .where(RefreshToken.family_id == existing_refresh_token.family_id)
+            .values(is_active=False)
+            )
+    await db.commit()
+    return 
 
 
 

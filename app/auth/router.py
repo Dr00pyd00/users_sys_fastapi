@@ -61,7 +61,7 @@ async def login_user(
                 )
     except InvalidCredentialsError:
         raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
+                status_code=status.HTTP_401_UNAUTHORIZED,
                 detail='Invalid Credentials',
                 )
 

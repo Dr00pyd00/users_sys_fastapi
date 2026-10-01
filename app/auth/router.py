@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status 
 
 from app.core.database import get_db
-from app.auth.schemas import UserLoginSchema, UserSuccessLoginTokensSchema, RefreshedAccessTokenSchema, RefreshTokenRequestSchema
-from app.auth.services import login_service, refresh_simple_service, refresh_service
+from app.auth.schemas import UserLoginSchema, UserSuccessLoginTokensSchema, RefreshTokenRequestSchema
+from app.auth.services import login_service, refresh_service
 
 from app.users.services import create_user_service 
 from app.users.schemas import   UserCreationFormSchema, UserClientDisplaySchema
@@ -23,7 +23,7 @@ router = APIRouter(
 
 @router.post(
         '/register', 
-        response_model=UserClientDisplaySchema, # type:ignore
+        response_model=UserClientDisplaySchema,
         status_code=status.HTTP_201_CREATED,
         )
 async def create_user(
@@ -59,7 +59,7 @@ async def login_user(
                 form_data=form_data,
                 db=db,
                 )
-    except InvalidCredentialsError as e:
+    except InvalidCredentialsError:
         raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail='Invalid Credentials',

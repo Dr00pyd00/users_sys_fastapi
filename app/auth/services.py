@@ -1,6 +1,5 @@
 
 import uuid
-import jwt
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,7 +9,7 @@ from app.auth.models import RefreshToken
 from app.core.settings import settings
 from app.security.jwt import create_access_jwt
 from app.security.pw_hashing import  verify_pw
-from app.auth.schemas import UserLoginSchema, UserSuccessLoginTokensSchema, RefreshTokenRequestSchema, RefreshedAccessTokenSchema
+from app.auth.schemas import UserLoginSchema, UserSuccessLoginTokensSchema, RefreshTokenRequestSchema
 from app.auth.exceptions import InvalidCredentialsError, InvalidRefreshToken 
 
 from app.security.refresh_token import generate_refresh_token, hash_refresh_token

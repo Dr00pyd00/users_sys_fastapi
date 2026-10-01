@@ -6,7 +6,7 @@ Ici on met juste les type pour postgres, on s'en fiche du 'mail type' par exempl
 from datetime import date as datetime_date # jours sans heures.
 
 from sqlalchemy import Date, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship 
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base 
 

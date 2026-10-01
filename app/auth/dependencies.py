@@ -45,12 +45,12 @@ async def get_current_user(
     
     try:
         payload = verify_jwt_token(token=token)
-    except jwt.ExpiredSignatureError as e:
+    except jwt.ExpiredSignatureError:
         raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail='token expired',
                 )
-    except jwt.InvalidTokenError as e:
+    except jwt.InvalidTokenError:
         raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail='token error',

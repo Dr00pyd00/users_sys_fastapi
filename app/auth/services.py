@@ -22,7 +22,7 @@ async def login_service(form_data: UserLoginSchema, db: AsyncSession) -> UserSuc
     Check the password with DB password.  
     Generate `access token` and `refresh token`. 
 
-    The refresh_token is a UUID, we hash it for DB.
+    The refresh_token is secrets.token_urlsafe(32) string, we hash it for DB.
 
     Args: 
         - `UserLoginSchema`: email + password 
@@ -84,7 +84,7 @@ async def refresh_service(refresh_token: RefreshTokenRequestSchema, db: AsyncSes
     Take a refresh_token from client, check all and give new tokens (access+refresh) for next time.
 
     Args:
-        - refresh_token: RefreshTokenRequestSchema -> uuid str represent the token 
+        - refresh_token: RefreshTokenRequestSchema -> secrets.token_urlsafe(32) str represent the token 
         - db: AsyncSession
     Returns:
         - UserSuccessLoginTokensSchema: new_refresh_token + new_access_token 

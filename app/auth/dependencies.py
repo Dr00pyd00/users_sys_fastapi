@@ -23,6 +23,8 @@ from app.users.models import User
 """
 bearer_scheme = HTTPBearer() 
 
+ERROR_HEADER = {'WWW-Authenticate':'Bearer'}
+
 
 
 async def get_current_user(
@@ -49,6 +51,7 @@ async def get_current_user(
         raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail='token expired',
+                headers=ERROR_HEADER,
                 )
     except jwt.InvalidTokenError:
         raise HTTPException(
@@ -60,6 +63,7 @@ async def get_current_user(
         raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail='Invalid token payload',
+                headers=ERROR_HEADER,
                 )
     res = await db.execute(select(User).where(User.id == int(user_id)))
     user = res.scalar_one_or_none()
@@ -67,6 +71,7 @@ async def get_current_user(
         raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail='User does not exist',
+                headers=ERROR_HEADER,
                 )
     return user 
     

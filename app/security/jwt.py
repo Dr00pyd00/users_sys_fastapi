@@ -44,40 +44,6 @@ def create_access_jwt(user_id: int, duration: int = settings.jwt_access_token_ex
     return encoded_token 
 
 
-def create_refresh_jwt(user_id: int, jti: str, duration: int = settings.jwt_refresh_token_expire_days):
-    """
-    Create a new jwt REFRESH token with:
-        - `expiration`: 7 days
-        - `payload` contain:
-            - sub (user_id i-e)
-            - exp (total life time of token)
-            - iat (timestamp creation of token)
-            - jti (id of the token) 
-            - token_type ('refresh_token' i-e) 
-
-    Args:
-        - user_id : int
-        - jti: str  ( uuid4 ) 
-        - duration: int -> live token duration in DAYS. Default=7 
-    Return:
-        - Refresh Token (str)
-    """
-    now = datetime.now(timezone.utc)
-    token_duration = timedelta(days=duration) 
-    payload = {
-            'sub': str(user_id),
-            'exp': now + token_duration,
-            'iat': now,
-            'jti': jti,
-            'token_type':'refresh_token',
-            }
-    encoded_token = jwt.encode(
-            payload=payload,
-            key=settings.jwt_secret,
-            algorithm=settings.jwt_algorithm,
-            )
-    return encoded_token 
-
 
 def verify_jwt_token(token: str):
     """

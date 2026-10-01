@@ -8,7 +8,7 @@ from sqlalchemy import select, update
 
 from app.auth.models import RefreshToken
 from app.core.settings import settings
-from app.security.jwt import create_access_jwt, create_refresh_jwt, verify_jwt_token
+from app.security.jwt import create_access_jwt
 from app.security.pw_hashing import  verify_pw
 from app.auth.schemas import UserLoginSchema, UserSuccessLoginTokensSchema, RefreshTokenRequestSchema, RefreshedAccessTokenSchema
 from app.auth.exceptions import InvalidCredentialsError, InvalidRefreshToken 
